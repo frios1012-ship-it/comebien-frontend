@@ -1,0 +1,600 @@
+<!-- src/app/dashboard/reportes/reportes.component.html -->
+<div class="reportes-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Centro de Reportes</h1>
+      <p>Analiza y visualiza los datos de tu sistema ComeBien</p>
+    </div>
+    <div class="header-actions">
+        <button mat-stroked-button class="export-btn" (click)="exportarPDF()">
+            <mat-icon>download</mat-icon>
+        Exportar
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Summary -->
+  <div class="stats-summary">
+    <div class="mini-stat">
+      <div class="mini-stat-icon green">
+        <mat-icon>restaurant_menu</mat-icon>
+      </div>
+      <div class="mini-stat-info">
+        <span class="mini-stat-value">{{ topRecetas.length || 0 }}</span>
+        <span class="mini-stat-label">Recetas Analizadas</span>
+      </div>
+    </div>
+    <div class="mini-stat">
+      <div class="mini-stat-icon orange">
+        <mat-icon>fitness_center</mat-icon>
+      </div>
+      <div class="mini-stat-info">
+        <span class="mini-stat-value">{{ rutinasPorNivel.length || 0 }}</span>
+        <span class="mini-stat-label">Rutinas por Nivel</span>
+      </div>
+    </div>
+    <div class="mini-stat">
+      <div class="mini-stat-icon purple">
+        <mat-icon>people</mat-icon>
+      </div>
+      <div class="mini-stat-info">
+        <span class="mini-stat-value">{{ clientesConMasListas.length || 0 }}</span>
+        <span class="mini-stat-label">Clientes Activos</span>
+      </div>
+    </div>
+    <div class="mini-stat">
+      <div class="mini-stat-icon blue">
+        <mat-icon>star</mat-icon>
+      </div>
+      <div class="mini-stat-info">
+        <span class="mini-stat-value">{{ promedioCalificacionPorCliente.length || 0 }}</span>
+        <span class="mini-stat-label">Calificaciones</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs de Reportes -->
+    <mat-tab-group #tabGroup animationDuration="300ms" class="report-tabs" (selectedIndexChange)="onTabChange($event)">
+
+    <!-- Tab Recetas -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>restaurant_menu</mat-icon>
+        <span>Recetas</span>
+      </ng-template>
+      
+      <div class="tab-content">
+        <div class="reports-grid">
+          <!-- Top Recetas -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon green">
+                  <mat-icon>trending_up</mat-icon>
+                </div>
+                <div>
+                  <h3>Top Recetas</h3>
+                  <p>Las recetas mas populares</p>
+                </div>
+              </div>
+              <button mat-icon-button (click)="cargarTopRecetas()" class="refresh-btn">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+            <div class="report-card-content">
+              <ng-container *ngIf="topRecetas.length > 0; else emptyTopRecetas">
+                <div class="data-list">
+                  <div class="data-item" *ngFor="let item of topRecetas; let i = index; trackBy: trackById">
+                    <div class="data-rank">{{ i + 1 }}</div>
+                    <div class="data-info">
+                      <span class="data-name">{{ item.nombreReceta }}</span>
+                      <span class="data-value">{{ item.promedio }} estrellas ({{ item.totalCalificaciones }} votos)</span>
+                    </div>
+                    <div class="data-bar">
+                      <div class="data-bar-fill green" [style.width.%]="item.promedio * 20"></div>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #emptyTopRecetas>
+                <div class="empty-state-mini">
+                  <mat-icon>bar_chart</mat-icon>
+                  <p>Clic en refrescar para cargar</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Buscar Recetas -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon orange">
+                  <mat-icon>search</mat-icon>
+                </div>
+                <div>
+                  <h3>Buscar Recetas</h3>
+                  <p>Busqueda por nombre</p>
+                </div>
+              </div>
+            </div>
+            <div class="report-card-content">
+              <div class="search-box">
+                <mat-form-field appearance="outline" class="search-field">
+                  <mat-label>Nombre de receta</mat-label>
+                  <input matInput [(ngModel)]="busquedaReceta" placeholder="Ej: Ensalada...">
+                  <mat-icon matPrefix>search</mat-icon>
+                </mat-form-field>
+                <button mat-raised-button color="primary" (click)="buscarRecetasPorNombre()" class="search-btn">
+                  Buscar
+                </button>
+              </div>
+              <!-- <CHANGE> Mostrar resultados o mensaje de sin resultados -->
+              <ng-container *ngIf="busquedaRecetaRealizada">
+                <div class="search-results" *ngIf="resultadosBusquedaReceta.length > 0; else noResultsReceta">
+                  <div class="result-item" *ngFor="let item of resultadosBusquedaReceta; trackBy: trackById">
+                    <mat-icon>restaurant</mat-icon>
+                    <span class="result-name">{{ item.nombre }}</span>
+                    <span class="result-badge">{{ item.caloriasTotales }} cal</span>
+                  </div>
+                </div>
+                <ng-template #noResultsReceta>
+                  <div class="empty-state-mini">
+                    <mat-icon>search_off</mat-icon>
+                    <p>No se encontraron recetas con "{{ busquedaReceta }}"</p>
+                  </div>
+                </ng-template>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- Promedio Calorias -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon purple">
+                  <mat-icon>local_fire_department</mat-icon>
+                </div>
+                <div>
+                  <h3>Promedio Calorias</h3>
+                  <p>Por cliente registrado</p>
+                </div>
+              </div>
+              <button mat-icon-button (click)="cargarPromedioCaloriasPorCliente()" class="refresh-btn">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+            <div class="report-card-content">
+              <ng-container *ngIf="promedioCaloriasPorCliente.length > 0; else emptyPromedioCalorias">
+                <div class="data-list">
+                  <div class="data-item" *ngFor="let item of promedioCaloriasPorCliente; trackBy: trackById">
+                    <div class="data-avatar">
+                      <mat-icon>person</mat-icon>
+                    </div>
+                    <div class="data-info">
+                      <span class="data-name">{{ item.cliente }}</span>
+                      <span class="data-value">{{ item.promedioCalorias }} cal promedio</span>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #emptyPromedioCalorias>
+                <div class="empty-state-mini">
+                  <mat-icon>local_fire_department</mat-icon>
+                  <p>Clic en refrescar para cargar</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Total Recetas por Cliente -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon blue">
+                  <mat-icon>assignment</mat-icon>
+                </div>
+                <div>
+                  <h3>Recetas por Cliente</h3>
+                  <p>Total de recetas creadas</p>
+                </div>
+              </div>
+              <button mat-icon-button (click)="cargarTotalRecetasPorCliente()" class="refresh-btn">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+            <div class="report-card-content">
+              <ng-container *ngIf="totalRecetasPorCliente.length > 0; else emptyTotalRecetas">
+                <div class="data-list">
+                  <div class="data-item" *ngFor="let item of totalRecetasPorCliente; trackBy: trackById">
+                    <div class="data-avatar">
+                      <mat-icon>person</mat-icon>
+                    </div>
+                    <div class="data-info">
+                      <span class="data-name">{{ item.cliente }}</span>
+                      <span class="data-value">{{ item.totalRecetas }} recetas</span>
+                    </div>
+                    <div class="data-count">{{ item.totalRecetas }}</div>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #emptyTotalRecetas>
+                <div class="empty-state-mini">
+                  <mat-icon>assignment</mat-icon>
+                  <p>Clic en refrescar para cargar</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Tab Rutinas -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>fitness_center</mat-icon>
+        <span>Rutinas</span>
+      </ng-template>
+      
+      <div class="tab-content">
+        <div class="reports-grid">
+          <!-- Rutinas por Nivel -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon orange">
+                  <mat-icon>signal_cellular_alt</mat-icon>
+                </div>
+                <div>
+                  <h3>Rutinas por Nivel</h3>
+                  <p>Distribucion de dificultad</p>
+                </div>
+              </div>
+              <button mat-icon-button (click)="cargarRutinasPorNivel()" class="refresh-btn">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+            <div class="report-card-content">
+              <ng-container *ngIf="rutinasPorNivel.length > 0; else emptyRutinasPorNivel">
+                <div class="level-cards">
+                  <div class="level-card" *ngFor="let item of rutinasPorNivel; let i = index; trackBy: trackById" [class]="getLevelClass(i)">
+                    <span class="level-name">{{ item.nivel }}</span>
+                    <span class="level-count">{{ item.totalRutinas }}</span>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #emptyRutinasPorNivel>
+                <div class="empty-state-mini">
+                  <mat-icon>signal_cellular_alt</mat-icon>
+                  <p>Clic en refrescar para cargar</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Rutinas Cortas -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon green">
+                  <mat-icon>timer</mat-icon>
+                </div>
+                <div>
+                  <h3>Rutinas Cortas</h3>
+                  <p>Filtrar por duracion maxima</p>
+                </div>
+              </div>
+            </div>
+            <div class="report-card-content">
+              <div class="search-box">
+                <mat-form-field appearance="outline" class="search-field">
+                  <mat-label>Minutos maximos</mat-label>
+                  <input matInput type="number" [(ngModel)]="minutosRutinasCortas" placeholder="30">
+                  <mat-icon matPrefix>schedule</mat-icon>
+                </mat-form-field>
+                <button mat-raised-button color="primary" (click)="cargarRutinasCortas()" class="search-btn">
+                  Filtrar
+                </button>
+              </div>
+              <!-- <CHANGE> Mostrar resultados o mensaje de sin resultados -->
+              <ng-container *ngIf="busquedaRutinasCortasRealizada">
+                <div class="data-list" *ngIf="rutinasCortas.length > 0; else noResultsRutinasCortas">
+                  <div class="data-item" *ngFor="let item of rutinasCortas; trackBy: trackById">
+                    <div class="data-avatar orange">
+                      <mat-icon>directions_run</mat-icon>
+                    </div>
+                    <div class="data-info">
+                      <span class="data-name">{{ item.nombre }}</span>
+                      <span class="data-value">{{ item.objetivo }}</span>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #noResultsRutinasCortas>
+                  <div class="empty-state-mini">
+                    <mat-icon>search_off</mat-icon>
+                    <p>No hay rutinas menores a {{ minutosRutinasCortas }} minutos</p>
+                  </div>
+                </ng-template>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- Buscar por Objetivo -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon purple">
+                  <mat-icon>track_changes</mat-icon>
+                </div>
+                <div>
+                  <h3>Buscar por Objetivo</h3>
+                  <p>Encuentra rutinas especificas</p>
+                </div>
+              </div>
+            </div>
+            <div class="report-card-content">
+              <div class="search-box">
+                <mat-form-field appearance="outline" class="search-field">
+                  <mat-label>Objetivo</mat-label>
+                  <input matInput [(ngModel)]="busquedaRutina" placeholder="Ej: Perdida de peso...">
+                  <mat-icon matPrefix>search</mat-icon>
+                </mat-form-field>
+                <button mat-raised-button color="primary" (click)="buscarRutinasPorObjetivo()" class="search-btn">
+                  Buscar
+                </button>
+              </div>
+              <!-- <CHANGE> Mostrar resultados o mensaje de sin resultados -->
+              <ng-container *ngIf="busquedaRutinaRealizada">
+                <div class="search-results" *ngIf="resultadosBusquedaRutina.length > 0; else noResultsRutina">
+                  <div class="result-item" *ngFor="let item of resultadosBusquedaRutina; trackBy: trackById">
+                    <mat-icon>fitness_center</mat-icon>
+                    <span class="result-name">{{ item.nombre }}</span>
+                    <span class="result-badge purple">{{ item.objetivo }}</span>
+                  </div>
+                </div>
+                <ng-template #noResultsRutina>
+                  <div class="empty-state-mini">
+                    <mat-icon>search_off</mat-icon>
+                    <p>No se encontraron rutinas con objetivo "{{ busquedaRutina }}"</p>
+                  </div>
+                </ng-template>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- Promedio Duracion -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon blue">
+                  <mat-icon>av_timer</mat-icon>
+                </div>
+                <div>
+                  <h3>Duracion Promedio</h3>
+                  <p>Por objetivo de rutina</p>
+                </div>
+              </div>
+              <button mat-icon-button (click)="cargarPromedioDuracionPorObjetivo()" class="refresh-btn">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+            <div class="report-card-content">
+              <ng-container *ngIf="promedioDuracionPorObjetivo.length > 0; else emptyPromedioDuracion">
+                <div class="data-list">
+                  <div class="data-item" *ngFor="let item of promedioDuracionPorObjetivo; trackBy: trackById">
+                    <div class="data-info">
+                      <span class="data-name">{{ item.objetivo }}</span>
+                      <span class="data-value">{{ item.promedioDuracion }} min promedio</span>
+                    </div>
+                    <div class="time-badge blue">{{ item.promedioDuracion }}m</div>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #emptyPromedioDuracion>
+                <div class="empty-state-mini">
+                  <mat-icon>av_timer</mat-icon>
+                  <p>Clic en refrescar para cargar</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Tab Clientes -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>people</mat-icon>
+        <span>Clientes</span>
+      </ng-template>
+      
+      <div class="tab-content">
+        <div class="reports-grid">
+          <!-- Buscar Clientes -->
+          <div class="report-card wide">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon purple">
+                  <mat-icon>person_search</mat-icon>
+                </div>
+                <div>
+                  <h3>Buscar Clientes</h3>
+                  <p>Encuentra clientes por nombre</p>
+                </div>
+              </div>
+            </div>
+            <div class="report-card-content">
+              <div class="search-box">
+                <mat-form-field appearance="outline" class="search-field">
+                  <mat-label>Nombre del cliente</mat-label>
+                  <input matInput [(ngModel)]="busquedaCliente" placeholder="Ej: Juan...">
+                  <mat-icon matPrefix>search</mat-icon>
+                </mat-form-field>
+                <button mat-raised-button color="primary" (click)="buscarClientesPorNombre()" class="search-btn">
+                  Buscar
+                </button>
+              </div>
+              <!-- <CHANGE> Mostrar resultados o mensaje de sin resultados -->
+              <ng-container *ngIf="busquedaClienteRealizada">
+                <div class="client-results" *ngIf="resultadosBusquedaCliente.length > 0; else noResultsCliente">
+                  <div class="client-card" *ngFor="let item of resultadosBusquedaCliente; trackBy: trackById">
+                    <div class="client-avatar">
+                      <mat-icon>person</mat-icon>
+                    </div>
+                    <div class="client-info">
+                      <span class="client-name">{{ item.nombre }}</span>
+                      <span class="client-detail">{{ item.email || item.telefono || '' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #noResultsCliente>
+                  <div class="empty-state-mini">
+                    <mat-icon>search_off</mat-icon>
+                    <p>No se encontraron clientes con "{{ busquedaCliente }}"</p>
+                  </div>
+                </ng-template>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- Clientes con Mas Listas -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon green">
+                  <mat-icon>format_list_numbered</mat-icon>
+                </div>
+                <div>
+                  <h3>Clientes con Mas Listas</h3>
+                  <p>Usuarios mas activos</p>
+                </div>
+              </div>
+              <button mat-icon-button (click)="cargarClientesConMasListas()" class="refresh-btn">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+            <div class="report-card-content">
+              <ng-container *ngIf="clientesConMasListas.length > 0; else emptyClientesListas">
+                <div class="data-list">
+                  <div class="data-item" *ngFor="let item of clientesConMasListas; let i = index; trackBy: trackById">
+                    <div class="data-rank gold">{{ i + 1 }}</div>
+                    <div class="data-info">
+                      <span class="data-name">{{ item.cliente }}</span>
+                      <span class="data-value">{{ item.totalListas }} listas creadas</span>
+                    </div>
+                    <div class="data-count">{{ item.totalListas }}</div>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #emptyClientesListas>
+                <div class="empty-state-mini">
+                  <mat-icon>format_list_numbered</mat-icon>
+                  <p>Clic en refrescar para cargar</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Tab Favoritos y Calificaciones -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>star</mat-icon>
+        <span>Favoritos</span>
+      </ng-template>
+      
+      <div class="tab-content">
+        <div class="reports-grid">
+          <!-- Top Listas Favoritas -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon orange">
+                  <mat-icon>favorite</mat-icon>
+                </div>
+                <div>
+                  <h3>Top Listas Favoritas</h3>
+                  <p>Las listas mas guardadas</p>
+                </div>
+              </div>
+              <button mat-icon-button (click)="cargarTopListasFavoritas()" class="refresh-btn">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+            <div class="report-card-content">
+              <ng-container *ngIf="topListasFavoritas.length > 0; else emptyTopFavoritas">
+                <div class="data-list">
+                  <div class="data-item" *ngFor="let item of topListasFavoritas; let i = index; trackBy: trackById">
+                    <div class="data-rank gold">{{ i + 1 }}</div>
+                    <div class="data-info">
+                      <span class="data-name">{{ item.nombreLista }}</span>
+                      <span class="data-value">{{ item.totalFavoritos }} veces guardada</span>
+                    </div>
+                    <div class="heart-count">
+                      <mat-icon>favorite</mat-icon>
+                      {{ item.totalFavoritos }}
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #emptyTopFavoritas>
+                <div class="empty-state-mini">
+                  <mat-icon>favorite</mat-icon>
+                  <p>Clic en refrescar para cargar</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Promedio Calificacion -->
+          <div class="report-card">
+            <div class="report-card-header">
+              <div class="report-title">
+                <div class="report-icon blue">
+                  <mat-icon>star_rate</mat-icon>
+                </div>
+                <div>
+                  <h3>Promedio Calificacion</h3>
+                  <p>Puntuacion por cliente</p>
+                </div>
+              </div>
+              <button mat-icon-button (click)="cargarPromedioCalificacionPorCliente()" class="refresh-btn">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+            <div class="report-card-content">
+              <ng-container *ngIf="promedioCalificacionPorCliente.length > 0; else emptyPromedioCalificacion">
+                <div class="data-list">
+                  <div class="data-item" *ngFor="let item of promedioCalificacionPorCliente; trackBy: trackById">
+                    <div class="data-avatar">
+                      <mat-icon>person</mat-icon>
+                    </div>
+                    <div class="data-info">
+                      <span class="data-name">{{ item.cliente }}</span>
+                      <div class="star-rating">
+                        <ng-container *ngFor="let star of [1,2,3,4,5]">
+                          <mat-icon [class.filled]="star <= item.promedioPuntaje">star</mat-icon>
+                        </ng-container>
+                        <span>{{ item.promedioPuntaje }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #emptyPromedioCalificacion>
+                <div class="empty-state-mini">
+                  <mat-icon>star_rate</mat-icon>
+                  <p>Clic en refrescar para cargar</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

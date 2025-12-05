@@ -1,0 +1,584 @@
+// src/styles.scss
+
+// ========================================
+// VARIABLES GLOBALES - COMEBIEN THEME
+// ========================================
+
+// Colores principales - Vibrantes y energeticos
+$primary: #00D9A5;           // Verde esmeralda vibrante
+$primary-dark: #00B386;      // Verde oscuro
+$primary-light: #4DFFC3;     // Verde claro
+
+$secondary: #FF6B6B;         // Coral energetico
+$secondary-dark: #E55555;    // Coral oscuro
+$secondary-light: #FF9999;   // Coral claro
+
+$accent: #7C4DFF;            // Violeta electrico
+$accent-dark: #651FFF;       // Violeta oscuro
+$accent-light: #B388FF;      // Violeta claro
+
+$warning: #FFB74D;           // Naranja ambar
+$success: #00E676;           // Verde exito
+$error: #FF5252;             // Rojo error
+$info: #40C4FF;              // Azul info
+
+// Colores neutros - Dark theme
+$dark-bg: #0A0A0F;           // Fondo principal muy oscuro
+$dark-surface: #12121A;      // Superficie cards
+$dark-elevated: #1A1A25;     // Elementos elevados
+$dark-border: #2A2A3A;       // Bordes sutiles
+
+// Textos
+$text-primary: #FFFFFF;
+$text-secondary: #A0A0B0;
+$text-muted: #606070;
+
+// Gradientes
+$gradient-primary: linear-gradient(135deg, $primary 0%, #00B4D8 100%);
+$gradient-secondary: linear-gradient(135deg, $secondary 0%, #FF8E53 100%);
+$gradient-accent: linear-gradient(135deg, $accent 0%, #E040FB 100%);
+$gradient-dark: linear-gradient(180deg, $dark-bg 0%, #151520 100%);
+
+// Sombras
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+$shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+$shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+$shadow-glow-primary: 0 0 30px rgba($primary, 0.3);
+$shadow-glow-secondary: 0 0 30px rgba($secondary, 0.3);
+$shadow-glow-accent: 0 0 30px rgba($accent, 0.3);
+
+// Border radius
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-xl: 24px;
+
+// Transiciones
+$transition-fast: 0.15s ease;
+$transition-normal: 0.3s ease;
+$transition-slow: 0.5s ease;
+
+// ========================================
+// RESET Y BASE
+// ========================================
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  background: $dark-bg;
+  color: $text-primary;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ========================================
+// TIPOGRAFIA
+// ========================================
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: $text-primary;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: $gradient-primary;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+
+p {
+  color: $text-secondary;
+  line-height: 1.7;
+}
+
+a {
+  color: $primary;
+  text-decoration: none;
+  transition: color $transition-fast;
+  
+  &:hover {
+    color: $primary-light;
+  }
+}
+
+// ========================================
+// SCROLLBAR PERSONALIZADO
+// ========================================
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $dark-surface;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $dark-border;
+  border-radius: 4px;
+  
+  &:hover {
+    background: $text-muted;
+  }
+}
+
+// ========================================
+// ANGULAR MATERIAL OVERRIDES
+// ========================================
+
+// Cards
+.mat-mdc-card {
+  background: $dark-surface !important;
+  border: 1px solid $dark-border !important;
+  border-radius: $radius-lg !important;
+  box-shadow: $shadow-md !important;
+  transition: all $transition-normal !important;
+  
+  &:hover {
+    border-color: rgba($primary, 0.3) !important;
+    box-shadow: $shadow-lg, $shadow-glow-primary !important;
+    transform: translateY(-2px);
+  }
+}
+
+.mat-mdc-card-header {
+  padding: 20px 24px 0 !important;
+}
+
+.mat-mdc-card-title {
+  color: $text-primary !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+}
+
+.mat-mdc-card-content {
+  padding: 20px 24px !important;
+}
+
+// Botones
+.mat-mdc-raised-button {
+  border-radius: $radius-md !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  padding: 0 24px !important;
+  height: 44px !important;
+  transition: all $transition-normal !important;
+  
+  &.mat-primary {
+    background: $gradient-primary !important;
+    box-shadow: $shadow-sm, 0 0 20px rgba($primary, 0.2) !important;
+    
+    &:hover {
+      box-shadow: $shadow-md, $shadow-glow-primary !important;
+      transform: translateY(-2px);
+    }
+  }
+  
+  &.mat-accent {
+    background: $gradient-secondary !important;
+    
+    &:hover {
+      box-shadow: $shadow-md, $shadow-glow-secondary !important;
+    }
+  }
+  
+  &.mat-warn {
+    background: $gradient-secondary !important;
+  }
+}
+
+.mat-mdc-button, .mat-mdc-outlined-button {
+  border-radius: $radius-md !important;
+  font-weight: 500 !important;
+}
+
+.mat-mdc-icon-button {
+  transition: all $transition-fast !important;
+  
+  &:hover {
+    background: rgba($primary, 0.1) !important;
+    
+    mat-icon {
+      color: $primary !important;
+    }
+  }
+  
+  &.mat-warn:hover {
+    background: rgba($secondary, 0.1) !important;
+    
+    mat-icon {
+      color: $secondary !important;
+    }
+  }
+}
+
+// Form Fields
+.mat-mdc-form-field {
+  width: 100%;
+  
+  .mdc-text-field--outlined {
+    background: $dark-elevated !important;
+    border-radius: $radius-md !important;
+    
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: $dark-border !important;
+    }
+  }
+  
+  &.mat-focused {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: $primary !important;
+      border-width: 2px !important;
+    }
+  }
+  
+  .mat-mdc-form-field-focus-overlay {
+    background: transparent !important;
+  }
+  
+  input, textarea {
+    color: $text-primary !important;
+    caret-color: $primary !important;
+  }
+  
+  .mat-mdc-floating-label {
+    color: $text-secondary !important;
+  }
+  
+  .mat-mdc-form-field-icon-suffix {
+    color: $text-muted !important;
+  }
+}
+
+// Select
+.mat-mdc-select {
+  color: $text-primary !important;
+}
+
+.mat-mdc-select-panel {
+  background: $dark-elevated !important;
+  border: 1px solid $dark-border !important;
+  border-radius: $radius-md !important;
+}
+
+.mat-mdc-option {
+  color: $text-primary !important;
+  
+  &:hover {
+    background: rgba($primary, 0.1) !important;
+  }
+  
+  &.mdc-list-item--selected {
+    background: rgba($primary, 0.2) !important;
+    color: $primary !important;
+  }
+}
+
+// Tables
+.mat-mdc-table {
+  background: transparent !important;
+  
+  .mat-mdc-header-row {
+    background: $dark-elevated !important;
+    
+    .mat-mdc-header-cell {
+      color: $text-secondary !important;
+      font-weight: 600 !important;
+      font-size: 0.75rem !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+      border-bottom: 1px solid $dark-border !important;
+      padding: 16px !important;
+    }
+  }
+  
+  .mat-mdc-row {
+    transition: all $transition-fast !important;
+    
+    &:hover {
+      background: rgba($primary, 0.05) !important;
+    }
+    
+    .mat-mdc-cell {
+      color: $text-primary !important;
+      border-bottom: 1px solid $dark-border !important;
+      padding: 16px !important;
+    }
+  }
+}
+
+// Paginator
+.mat-mdc-paginator {
+  background: transparent !important;
+  color: $text-secondary !important;
+  border-top: 1px solid $dark-border !important;
+  
+  .mat-mdc-paginator-page-size-label,
+  .mat-mdc-paginator-range-label {
+    color: $text-secondary !important;
+  }
+  
+  .mat-mdc-select-value {
+    color: $text-primary !important;
+  }
+  
+  .mat-mdc-paginator-icon {
+    fill: $text-secondary !important;
+  }
+}
+
+// Sort Header
+.mat-sort-header-arrow {
+  color: $primary !important;
+}
+
+// Toolbar
+.mat-toolbar {
+  background: $dark-surface !important;
+  border-bottom: 1px solid $dark-border !important;
+  color: $text-primary !important;
+}
+
+// Sidenav
+.mat-sidenav {
+  background: $dark-surface !important;
+  border-right: 1px solid $dark-border !important;
+}
+
+.mat-sidenav-content {
+  background: $dark-bg !important;
+}
+
+// Nav List
+.mat-mdc-nav-list {
+  .mat-mdc-list-item {
+    margin: 4px 12px !important;
+    border-radius: $radius-md !important;
+    color: $text-secondary !important;
+    transition: all $transition-fast !important;
+    
+    &:hover {
+      background: rgba($primary, 0.1) !important;
+      color: $text-primary !important;
+      
+      mat-icon {
+        color: $primary !important;
+      }
+    }
+    
+    &.active {
+      background: $gradient-primary !important;
+      color: $dark-bg !important;
+      
+      mat-icon {
+        color: $dark-bg !important;
+      }
+    }
+    
+    mat-icon {
+      color: $text-muted !important;
+      margin-right: 12px !important;
+    }
+  }
+}
+
+// Menu
+.mat-mdc-menu-panel {
+  background: $dark-elevated !important;
+  border: 1px solid $dark-border !important;
+  border-radius: $radius-md !important;
+  
+  .mat-mdc-menu-item {
+    color: $text-primary !important;
+    
+    &:hover {
+      background: rgba($primary, 0.1) !important;
+    }
+    
+    mat-icon {
+      color: $text-secondary !important;
+    }
+  }
+}
+
+// Tabs
+.mat-mdc-tab-group {
+  .mat-mdc-tab {
+    color: $text-secondary !important;
+    
+    &.mdc-tab--active {
+      color: $primary !important;
+    }
+  }
+  
+  .mdc-tab-indicator__content--underline {
+    border-color: $primary !important;
+  }
+}
+
+.mat-mdc-tab-body-wrapper {
+  background: transparent !important;
+}
+
+// Snackbar
+.mat-mdc-snack-bar-container {
+  .mdc-snackbar__surface {
+    background: $dark-elevated !important;
+    border: 1px solid $dark-border !important;
+    border-radius: $radius-md !important;
+  }
+  
+  .mat-mdc-snack-bar-label {
+    color: $text-primary !important;
+  }
+  
+  .mat-mdc-button {
+    color: $primary !important;
+  }
+}
+
+// Datepicker
+.mat-datepicker-content {
+  background: $dark-elevated !important;
+  border: 1px solid $dark-border !important;
+  border-radius: $radius-lg !important;
+  
+  .mat-calendar {
+    background: transparent !important;
+  }
+  
+  .mat-calendar-header {
+    background: transparent !important;
+  }
+  
+  .mat-calendar-body-cell-content {
+    color: $text-primary !important;
+    
+    &:hover {
+      background: rgba($primary, 0.2) !important;
+    }
+  }
+  
+  .mat-calendar-body-selected {
+    background: $primary !important;
+    color: $dark-bg !important;
+  }
+  
+  .mat-calendar-body-today {
+    border-color: $primary !important;
+  }
+}
+
+// Dialog
+.mat-mdc-dialog-container {
+  .mdc-dialog__surface {
+    background: $dark-surface !important;
+    border: 1px solid $dark-border !important;
+    border-radius: $radius-xl !important;
+  }
+}
+
+// ========================================
+// CLASES UTILITARIAS
+// ========================================
+
+// Texto con gradiente
+.text-gradient-primary {
+  background: $gradient-primary;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-secondary {
+  background: $gradient-secondary;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Glow effects
+.glow-primary {
+  box-shadow: $shadow-glow-primary;
+}
+
+.glow-secondary {
+  box-shadow: $shadow-glow-secondary;
+}
+
+.glow-accent {
+  box-shadow: $shadow-glow-accent;
+}
+
+// Backgrounds
+.bg-gradient-primary {
+  background: $gradient-primary;
+}
+
+.bg-gradient-secondary {
+  background: $gradient-secondary;
+}
+
+.bg-gradient-accent {
+  background: $gradient-accent;
+}
+
+// Glass effect
+.glass {
+  background: rgba($dark-surface, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+// Animaciones
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+// Loading skeleton
+.skeleton {
+  background: linear-gradient(90deg, $dark-elevated 25%, $dark-border 50%, $dark-elevated 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: $radius-md;
+}

@@ -1,0 +1,288 @@
+<!-- src/app/dashboard/ejercicios-rutina/ejercicios-rutina.component.html -->
+
+<div class="crud-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-info">
+      <div class="title-wrapper">
+        <mat-icon class="page-icon cyan">fitness_center</mat-icon>
+        <div>
+          <h1>Ejercicios por Rutina</h1>
+          <p>Administra los ejercicios asignados a cada rutina</p>
+        </div>
+      </div>
+      <div class="stats-chip">
+        <mat-icon>fitness_center</mat-icon>
+        <span>{{ ejerciciosRutina.length }} asignaciones</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input 
+          type="text" 
+          placeholder="Buscar..." 
+          [(ngModel)]="searchTerm"
+          (input)="filterData()">
+      </div>
+
+      <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+        <mat-icon>add</mat-icon>
+        <span>Asignar Ejercicio</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading && !showForm">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Form Modal -->
+  <ng-container *ngIf="showForm">
+    <div class="modal-overlay" (click)="closeForm()"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">
+          <mat-icon>{{ editMode ? 'edit' : 'fitness_center' }}</mat-icon>
+          <div>
+            <h2>{{ editMode ? 'Editar Asignación' : 'Asignar Ejercicio a Rutina' }}</h2>
+            <p>{{ editMode ? 'Modifica los datos' : 'Configura el ejercicio para la rutina' }}</p>
+          </div>
+        </div>
+        <button mat-icon-button (click)="closeForm()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <form [formGroup]="ejercicioRutinaForm" (ngSubmit)="guardar()" class="modal-body">
+        
+        <!-- Rutina -->
+        <div class="form-group">
+          <label>Rutina</label>
+          <div class="select-field">
+            <mat-icon>event_note</mat-icon>
+            <select formControlName="rutinaId">
+              <option [ngValue]="null" disabled>Selecciona una rutina</option>
+              <option *ngFor="let rutina of rutinas; trackBy: trackById" [ngValue]="rutina.id">
+                {{ rutina.nombre }}
+              </option>
+            </select>
+            <mat-icon class="arrow-icon">expand_more</mat-icon>
+          </div>
+          <span class="field-error" *ngIf="ejercicioRutinaForm.get('rutinaId')?.invalid && ejercicioRutinaForm.get('rutinaId')?.touched">
+            Debes seleccionar una rutina
+          </span>
+        </div>
+
+        <!-- Ejercicio -->
+        <div class="form-group">
+          <label>Ejercicio</label>
+          <div class="select-field">
+            <mat-icon>sports_gymnastics</mat-icon>
+            <select formControlName="ejercicioId">
+              <option [ngValue]="null" disabled>Selecciona un ejercicio</option>
+              <option *ngFor="let ejercicio of ejercicios; trackBy: trackById" [ngValue]="ejercicio.id">
+                {{ ejercicio.nombre }}
+              </option>
+            </select>
+            <mat-icon class="arrow-icon">expand_more</mat-icon>
+          </div>
+          <span class="field-error" *ngIf="ejercicioRutinaForm.get('ejercicioId')?.invalid && ejercicioRutinaForm.get('ejercicioId')?.touched">
+            Debes seleccionar un ejercicio
+          </span>
+        </div>
+
+        <!-- Orden, Series, Repeticiones -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Orden</label>
+            <div class="input-field">
+              <mat-icon>format_list_numbered</mat-icon>
+              <input type="number" formControlName="orden" min="1" placeholder="1">
+            </div>
+            <span class="field-error" *ngIf="ejercicioRutinaForm.get('orden')?.invalid && ejercicioRutinaForm.get('orden')?.touched">
+              Orden requerido
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Series</label>
+            <div class="input-field">
+              <mat-icon>repeat</mat-icon>
+              <input type="number" formControlName="series" min="1" placeholder="3">
+            </div>
+            <span class="field-error" *ngIf="ejercicioRutinaForm.get('series')?.invalid && ejercicioRutinaForm.get('series')?.touched">
+              Series requeridas
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Repeticiones</label>
+            <div class="input-field">
+              <mat-icon>loop</mat-icon>
+              <input type="number" formControlName="repeticiones" min="1" placeholder="10">
+            </div>
+            <span class="field-error" *ngIf="ejercicioRutinaForm.get('repeticiones')?.invalid && ejercicioRutinaForm.get('repeticiones')?.touched">
+              Repeticiones requeridas
+            </span>
+          </div>
+        </div>
+
+        <!-- Duración e Intensidad -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Duración (segundos)</label>
+            <div class="input-field">
+              <mat-icon>timer</mat-icon>
+              <input type="number" formControlName="duracionSeg" min="0" placeholder="60">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Intensidad</label>
+            <div class="select-field">
+              <mat-icon>speed</mat-icon>
+              <select formControlName="intensidad">
+                <option *ngFor="let int of intensidades" [value]="int">{{ int }}</option>
+              </select>
+              <mat-icon class="arrow-icon">expand_more</mat-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tiempo (opcional) -->
+        <div class="form-group">
+          <label>Tiempo/Notas (opcional)</label>
+          <div class="input-field">
+            <mat-icon>schedule</mat-icon>
+            <input type="text" formControlName="tiempo" placeholder="Ej: 30 seg descanso">
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" mat-stroked-button (click)="closeForm()" class="cancel-btn">
+            Cancelar
+          </button>
+
+          <button 
+            *ngIf="loading" 
+            type="button" 
+            mat-raised-button 
+            color="primary" 
+            disabled 
+            class="submit-btn">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Guardando...</span>
+          </button>
+
+          <button 
+            *ngIf="!loading && editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>save</mat-icon>
+            <span>Guardar</span>
+          </button>
+
+          <button 
+            *ngIf="!loading && !editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>add</mat-icon>
+            <span>Asignar</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredEjerciciosRutina.length === 0 && !showForm">
+    <div class="empty-icon">
+      <mat-icon>fitness_center</mat-icon>
+    </div>
+    <h3>No hay ejercicios asignados</h3>
+    <p>Comienza asignando ejercicios a las rutinas</p>
+
+    <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+      <mat-icon>add</mat-icon>
+      <span>Asignar Ejercicio</span>
+    </button>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="cards-grid" *ngIf="!loading && filteredEjerciciosRutina.length > 0">
+    <mat-card class="crud-card" *ngFor="let item of filteredEjerciciosRutina; trackBy: trackById">
+
+      <div class="card-header">
+        <div class="card-icon cyan">
+          <mat-icon>fitness_center</mat-icon>
+        </div>
+
+        <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-btn">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="editar(item)">
+            <mat-icon>edit</mat-icon>
+            <span>Editar</span>
+          </button>
+
+          <button mat-menu-item *ngIf="isAdmin" (click)="confirmarEliminar(item)" class="delete-menu-item">
+            <mat-icon>delete</mat-icon>
+            <span>Eliminar</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <mat-card-content class="card-body">
+        <h3 class="card-title">{{ item.ejercicioNombre || getEjercicioNombre(item.ejercicioId) }}</h3>
+
+        <div class="card-meta">
+          <mat-icon>event_note</mat-icon>
+          <span>{{ getRutinaNombre(item.rutinaId) }}</span>
+        </div>
+
+        <div class="card-meta">
+          <mat-icon>format_list_numbered</mat-icon>
+          <span>Orden: {{ item.orden }}</span>
+        </div>
+
+        <div class="card-meta">
+          <mat-icon>repeat</mat-icon>
+          <span>{{ item.series }} series x {{ item.repeticiones }} reps</span>
+        </div>
+
+        <div class="card-meta" *ngIf="item.duracionSeg > 0">
+          <mat-icon>timer</mat-icon>
+          <span>{{ item.duracionSeg }} segundos</span>
+        </div>
+
+        <div class="card-tags">
+          <span class="tag" [ngClass]="getIntensidadClass(item.intensidad)">{{ item.intensidad }}</span>
+        </div>
+      </mat-card-content>
+
+      <div class="card-footer">
+        <span class="card-id">#{{ item.id }}</span>
+        <div class="card-actions">
+          <button mat-icon-button matTooltip="Editar" (click)="editar(item)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Eliminar" *ngIf="isAdmin" (click)="confirmarEliminar(item)" class="delete-btn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+
+    </mat-card>
+  </div>
+</div>

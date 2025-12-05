@@ -1,0 +1,238 @@
+<!-- src/app/dashboard/clientes/clientes.component.html -->
+
+<div class="crud-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-info">
+      <div class="title-wrapper">
+        <mat-icon class="page-icon">people</mat-icon>
+        <div>
+          <h1>Gestión de Clientes</h1>
+          <p>Administra los clientes del sistema</p>
+        </div>
+      </div>
+      <div class="stats-chip">
+        <mat-icon>people</mat-icon>
+        <span>{{ clientes.length }} clientes</span>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input 
+          type="text" 
+          placeholder="Buscar clientes..." 
+          [(ngModel)]="searchTerm"
+          (input)="filterClientes()">
+      </div>
+
+      <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+        <mat-icon>add</mat-icon>
+        <span>Nuevo Cliente</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading && !showForm">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando clientes...</p>
+  </div>
+
+  <!-- Form Modal -->
+  <ng-container *ngIf="showForm">
+    <div class="modal-overlay" (click)="closeForm()"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">
+          <mat-icon>{{ editMode ? 'edit' : 'person_add' }}</mat-icon>
+          <div>
+            <h2>{{ editMode ? 'Editar Cliente' : 'Nuevo Cliente' }}</h2>
+            <p>{{ editMode ? 'Modifica los datos del cliente' : 'Registra un nuevo cliente' }}</p>
+          </div>
+        </div>
+        <button mat-icon-button (click)="closeForm()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      
+      <form [formGroup]="clienteForm" (ngSubmit)="guardarCliente()" class="modal-body">
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Nombre Completo</label>
+            <div class="input-field">
+              <mat-icon>person</mat-icon>
+              <input type="text" formControlName="nombre" placeholder="Ej: Juan Pérez">
+            </div>
+            <span class="field-error" *ngIf="clienteForm.get('nombre')?.hasError('required') && clienteForm.get('nombre')?.touched">
+              El nombre es requerido
+            </span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fecha de Nacimiento</label>
+            <div class="input-field">
+              <mat-icon>cake</mat-icon>
+              <input type="date" formControlName="fechaNacimiento">
+            </div>
+            <span class="field-error" *ngIf="clienteForm.get('fechaNacimiento')?.hasError('required') && clienteForm.get('fechaNacimiento')?.touched">
+              La fecha es requerida
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Talla (metros)</label>
+            <div class="input-field">
+              <mat-icon>height</mat-icon>
+              <input type="number" step="0.01" formControlName="talla" placeholder="Ej: 1.75">
+            </div>
+            <span class="field-error" *ngIf="clienteForm.get('talla')?.hasError('required') && clienteForm.get('talla')?.touched">
+              La talla es requerida
+            </span>
+            <!-- <CHANGE> Agregar validación min -->
+            <span class="field-error" *ngIf="clienteForm.get('talla')?.hasError('min') && clienteForm.get('talla')?.touched">
+              La talla mínima es 0.5 metros
+            </span>
+            <!-- <CHANGE> Agregar validación max -->
+            <span class="field-error" *ngIf="clienteForm.get('talla')?.hasError('max') && clienteForm.get('talla')?.touched">
+              La talla máxima es 2.5 metros
+            </span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Peso Objetivo (kg)</label>
+            <div class="input-field">
+              <mat-icon>monitor_weight</mat-icon>
+              <input type="number" step="0.1" formControlName="pesoObjetivo" placeholder="Ej: 70">
+            </div>
+            <span class="field-error" *ngIf="clienteForm.get('pesoObjetivo')?.hasError('required') && clienteForm.get('pesoObjetivo')?.touched">
+              El peso es requerido
+            </span>
+            <!-- <CHANGE> Agregar validación min -->
+            <span class="field-error" *ngIf="clienteForm.get('pesoObjetivo')?.hasError('min') && clienteForm.get('pesoObjetivo')?.touched">
+              El peso mínimo es 1 kg
+            </span>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" mat-stroked-button (click)="closeForm()" class="cancel-btn">
+            Cancelar
+          </button>
+
+          <!-- Loading state -->
+          <button 
+            *ngIf="loading" 
+            type="button" 
+            mat-raised-button 
+            color="primary" 
+            disabled 
+            class="submit-btn">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Guardando...</span>
+          </button>
+
+          <!-- Edit mode - <CHANGE> Quitado [disabled] para permitir submit -->
+          <button 
+            *ngIf="!loading && editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>save</mat-icon>
+            <span>Guardar</span>
+          </button>
+
+          <!-- Create mode - <CHANGE> Quitado [disabled] para permitir submit -->
+          <button 
+            *ngIf="!loading && !editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>add</mat-icon>
+            <span>Crear</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredClientes.length === 0 && !showForm">
+    <div class="empty-icon">
+      <mat-icon>people_outline</mat-icon>
+    </div>
+    <h3>No hay clientes registrados</h3>
+    <p>Comienza agregando el primer cliente al sistema</p>
+
+    <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+      <mat-icon>add</mat-icon>
+      <span>Crear Cliente</span>
+    </button>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="cards-grid" *ngIf="!loading && filteredClientes.length > 0">
+    <mat-card class="crud-card" *ngFor="let cliente of filteredClientes; trackBy: trackById">
+
+      <div class="card-header">
+        <div class="card-icon green">
+          <mat-icon>person</mat-icon>
+        </div>
+
+        <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-btn">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="editarCliente(cliente)">
+            <mat-icon>edit</mat-icon>
+            <span>Editar</span>
+          </button>
+
+          <button mat-menu-item *ngIf="isAdmin" (click)="confirmarEliminar(cliente)" class="delete-menu-item">
+            <mat-icon>delete</mat-icon>
+            <span>Eliminar</span>
+          </button>
+        </mat-menu>
+
+      </div>
+
+      <mat-card-content class="card-body">
+        <h3 class="card-title">{{ cliente.nombre }}</h3>
+        <div class="card-meta">
+          <mat-icon>cake</mat-icon>
+          <span>{{ formatDate(cliente.fechaNacimiento) }}</span>
+        </div>
+        <div class="card-meta">
+          <mat-icon>height</mat-icon>
+          <span>{{ cliente.talla }} m</span>
+        </div>
+        <div class="card-meta">
+          <mat-icon>monitor_weight</mat-icon>
+          <span>Objetivo: {{ cliente.pesoObjetivo }} kg</span>
+        </div>
+      </mat-card-content>
+
+      <div class="card-footer">
+        <span class="card-id">#{{ cliente.id }}</span>
+        <div class="card-actions">
+          <button mat-icon-button matTooltip="Editar" (click)="editarCliente(cliente)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Eliminar" *ngIf="isAdmin" (click)="confirmarEliminar(cliente)" class="delete-btn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+
+    </mat-card>
+  </div>
+</div>

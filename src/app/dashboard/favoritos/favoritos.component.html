@@ -1,0 +1,193 @@
+<!-- src/app/dashboard/favoritos/favoritos.component.html -->
+
+<div class="crud-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-info">
+      <div class="title-wrapper">
+        <mat-icon class="page-icon pink">favorite</mat-icon>
+        <div>
+          <h1>{{ isAdmin ? 'Gestión de Favoritos' : 'Mis Favoritos' }}</h1>
+          <p>{{ isAdmin ? 'Administra todos los favoritos del sistema' : 'Gestiona tus elementos favoritos' }}</p>
+        </div>
+      </div>
+      <div class="stats-chip">
+        <mat-icon>favorite</mat-icon>
+        <span>{{ favoritos.length }} favoritos</span>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input 
+          type="text" 
+          placeholder="Buscar favoritos..." 
+          [(ngModel)]="searchTerm"
+          (input)="filterFavoritos()">
+      </div>
+      <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+        <mat-icon>add</mat-icon>
+        <span>Nuevo Favorito</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading && !showForm">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando favoritos...</p>
+  </div>
+
+  <!-- Form Modal -->
+  <ng-container *ngIf="showForm">
+    <div class="modal-overlay" (click)="closeForm()"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">
+          <mat-icon>{{ editMode ? 'edit' : 'favorite' }}</mat-icon>
+          <div>
+            <h2>{{ editMode ? 'Editar Favorito' : 'Nuevo Favorito' }}</h2>
+            <p>{{ editMode ? 'Modifica los datos del favorito' : 'Agrega un nuevo favorito' }}</p>
+          </div>
+        </div>
+        <button mat-icon-button (click)="closeForm()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      
+      <form [formGroup]="favoritoForm" (ngSubmit)="guardarFavorito()" class="modal-body">
+        <!-- Lista -->
+        <div class="form-group">
+          <label>Lista</label>
+          <div class="select-field">
+            <mat-icon>format_list_bulleted</mat-icon>
+            <select formControlName="listaId">
+              <option [ngValue]="null" disabled>Selecciona una lista</option>
+              <option *ngFor="let lista of listas; trackBy: trackById" [ngValue]="lista.id">
+                {{ lista.nombre }}
+              </option>
+            </select>
+            <mat-icon class="arrow-icon">expand_more</mat-icon>
+          </div>
+          <span class="field-error" *ngIf="favoritoForm.get('listaId')?.hasError('required') && favoritoForm.get('listaId')?.touched">
+            Debes seleccionar una lista
+          </span>
+        </div>
+
+        <!-- Notas -->
+        <div class="form-group">
+          <label>Notas (opcional)</label>
+          <div class="textarea-field">
+            <mat-icon>notes</mat-icon>
+            <textarea formControlName="notas" placeholder="Agrega notas sobre este favorito..." rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" mat-stroked-button (click)="closeForm()" class="cancel-btn">
+            Cancelar
+          </button>
+
+          <!-- Loading state -->
+          <button 
+            *ngIf="loading" 
+            type="button" 
+            mat-raised-button 
+            color="primary" 
+            disabled 
+            class="submit-btn">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Guardando...</span>
+          </button>
+
+          <!-- Edit mode -->
+          <button 
+            *ngIf="!loading && editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>save</mat-icon>
+            <span>Guardar</span>
+          </button>
+
+          <!-- Create mode -->
+          <button 
+            *ngIf="!loading && !editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>add</mat-icon>
+            <span>Crear</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredFavoritos.length === 0 && !showForm">
+    <div class="empty-icon">
+      <mat-icon>favorite_border</mat-icon>
+    </div>
+    <h3>No hay favoritos disponibles</h3>
+    <p>Agrega tu primer favorito para comenzar</p>
+    <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+      <mat-icon>add</mat-icon>
+      <span>Agregar Favorito</span>
+    </button>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="cards-grid" *ngIf="!loading && filteredFavoritos.length > 0">
+    <mat-card class="crud-card" *ngFor="let favorito of filteredFavoritos; trackBy: trackById">
+      
+      <div class="card-header">
+        <div class="card-icon pink">
+          <mat-icon>favorite</mat-icon>
+        </div>
+        <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-btn">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="editarFavorito(favorito)">
+            <mat-icon>edit</mat-icon>
+            <span>Editar</span>
+          </button>
+          <button mat-menu-item *ngIf="isAdmin" (click)="confirmarEliminar(favorito)" class="delete-menu-item">
+            <mat-icon>delete</mat-icon>
+            <span>Eliminar</span>
+          </button>
+        </mat-menu>
+      </div>
+      
+      <mat-card-content class="card-body">
+        <h3 class="card-title">{{ getListaNombre(favorito.listaId) }}</h3>
+        
+        <div class="card-meta">
+          <mat-icon>calendar_today</mat-icon>
+          <span>{{ formatDate(favorito.fechaGuardado) }}</span>
+        </div>
+
+        <p class="card-description" *ngIf="favorito.notas">
+          {{ favorito.notas.length > 80 ? (favorito.notas | slice:0:80) + '...' : favorito.notas }}
+        </p>
+      </mat-card-content>
+      
+      <div class="card-footer">
+        <span class="card-id">#{{ favorito.id }}</span>
+        <div class="card-actions">
+          <button mat-icon-button matTooltip="Editar" (click)="editarFavorito(favorito)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Eliminar" *ngIf="isAdmin" (click)="confirmarEliminar(favorito)" class="delete-btn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+      
+    </mat-card>
+  </div>
+</div>

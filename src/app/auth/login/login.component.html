@@ -1,0 +1,51 @@
+<!-- src/app/auth/login/login.component.html -->
+<div class="login-container">
+  <mat-card class="login-card">
+    <div class="login-header">
+      <div class="logo-icon">
+        <mat-icon>restaurant</mat-icon>
+      </div>
+      <h1>ComeBien</h1>
+      <p>Sistema de Nutricion y Fitness</p>
+    </div>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Usuario</mat-label>
+        <input matInput formControlName="username" placeholder="Ingrese su usuario">
+        <mat-icon matPrefix>person_outline</mat-icon>
+        @if (loginForm.get('username')?.hasError('required') && loginForm.get('username')?.touched) {
+          <mat-error>El usuario es requerido</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Contrasena</mat-label>
+        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
+        <mat-icon matPrefix>lock_outline</mat-icon>
+        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button" class="password-toggle">
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
+          <mat-error>La contrasena es requerida</mat-error>
+        }
+      </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" class="login-button" [disabled]="loading || loginForm.invalid">
+        @if (loading) {
+            <mat-icon class="animate-pulse">hourglass_empty</mat-icon>
+        }
+        <span>{{ loading ? 'Ingresando...' : 'Iniciar Sesion' }}</span>
+        </button>
+        <!-- Agregar después del botón de submit -->
+        <div class="register-link">
+            <span>¿No tienes cuenta?</span>
+            <a routerLink="/register">Regístrate</a>
+        </div>
+    </form>
+    
+    <div class="login-footer">
+      <p>Version 1.0.0</p>
+    </div>
+  </mat-card>
+</div>

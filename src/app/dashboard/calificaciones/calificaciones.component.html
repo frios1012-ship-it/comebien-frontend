@@ -1,0 +1,230 @@
+<!-- src/app/dashboard/calificaciones/calificaciones.component.html -->
+
+<div class="crud-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-info">
+      <div class="title-wrapper">
+        <mat-icon class="page-icon amber">star</mat-icon>
+        <div>
+          <h1>{{ isAdmin ? 'Gestión de Calificaciones' : 'Mis Calificaciones' }}</h1>
+          <p>{{ isAdmin ? 'Administra todas las calificaciones' : 'Gestiona tus calificaciones de recetas' }}</p>
+        </div>
+      </div>
+      <div class="stats-chip">
+        <mat-icon>star</mat-icon>
+        <span>{{ calificaciones.length }} calificaciones</span>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input 
+          type="text" 
+          placeholder="Buscar calificaciones..." 
+          [(ngModel)]="searchTerm"
+          (input)="filterCalificaciones()">
+      </div>
+      <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+        <mat-icon>add</mat-icon>
+        <span>Nueva Calificación</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading && !showForm">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando calificaciones...</p>
+  </div>
+
+  <!-- Form Modal -->
+  <ng-container *ngIf="showForm">
+    <div class="modal-overlay" (click)="closeForm()"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">
+          <mat-icon>{{ editMode ? 'edit' : 'star' }}</mat-icon>
+          <div>
+            <h2>{{ editMode ? 'Editar Calificación' : 'Nueva Calificación' }}</h2>
+            <p>{{ editMode ? 'Modifica los datos de la calificación' : 'Califica una receta' }}</p>
+          </div>
+        </div>
+        <button mat-icon-button (click)="closeForm()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      
+      <form [formGroup]="calificacionForm" (ngSubmit)="guardarCalificacion()" class="modal-body">
+        <!-- Receta -->
+        <div class="form-group">
+          <label>Receta</label>
+          <div class="select-field">
+            <mat-icon>restaurant_menu</mat-icon>
+            <select formControlName="recetaId">
+              <option [ngValue]="null" disabled>Selecciona una receta</option>
+              <option *ngFor="let receta of recetas; trackBy: trackById" [ngValue]="receta.id">
+                {{ receta.nombre }}
+              </option>
+            </select>
+            <mat-icon class="arrow-icon">expand_more</mat-icon>
+          </div>
+          <span class="field-error" *ngIf="calificacionForm.get('recetaId')?.hasError('required') && calificacionForm.get('recetaId')?.touched">
+            Debes seleccionar una receta
+          </span>
+        </div>
+
+        <!-- <CHANGE> Selector de Lista -->
+        <div class="form-group">
+          <label>Lista (opcional)</label>
+          <div class="select-field">
+            <mat-icon>playlist_add_check</mat-icon>
+            <select formControlName="listaId">
+              <option [ngValue]="null">Sin lista asignada</option>
+              <option *ngFor="let lista of listas; trackBy: trackById" [ngValue]="lista.id">
+                {{ lista.nombre }}
+              </option>
+            </select>
+            <mat-icon class="arrow-icon">expand_more</mat-icon>
+          </div>
+        </div>
+
+        <!-- Puntaje -->
+        <div class="form-group">
+          <label>Puntaje (1-5 estrellas)</label>
+          <div class="input-field">
+            <mat-icon>star</mat-icon>
+            <input type="number" formControlName="puntaje" min="1" max="5" placeholder="5">
+          </div>
+          <span class="field-error" *ngIf="calificacionForm.get('puntaje')?.invalid && calificacionForm.get('puntaje')?.touched">
+            El puntaje debe ser entre 1 y 5
+          </span>
+        </div>
+
+        <!-- Comentario -->
+        <div class="form-group">
+          <label>Comentario (opcional)</label>
+          <div class="textarea-field">
+            <mat-icon>comment</mat-icon>
+            <textarea formControlName="comentario" placeholder="Escribe tu opinión sobre esta receta..." rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" mat-stroked-button (click)="closeForm()" class="cancel-btn">
+            Cancelar
+          </button>
+
+          <!-- Loading state -->
+          <button 
+            *ngIf="loading" 
+            type="button" 
+            mat-raised-button 
+            color="primary" 
+            disabled 
+            class="submit-btn">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Guardando...</span>
+          </button>
+
+          <!-- Edit mode -->
+          <button 
+            *ngIf="!loading && editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>save</mat-icon>
+            <span>Guardar</span>
+          </button>
+
+          <!-- Create mode -->
+          <button 
+            *ngIf="!loading && !editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>add</mat-icon>
+            <span>Crear</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredCalificaciones.length === 0 && !showForm">
+    <div class="empty-icon">
+      <mat-icon>star_border</mat-icon>
+    </div>
+    <h3>No hay calificaciones disponibles</h3>
+    <p>Califica tu primera receta para comenzar</p>
+    <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+      <mat-icon>add</mat-icon>
+      <span>Nueva Calificación</span>
+    </button>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="cards-grid" *ngIf="!loading && filteredCalificaciones.length > 0">
+    <mat-card class="crud-card" *ngFor="let calificacion of filteredCalificaciones; trackBy: trackById">
+      
+      <div class="card-header">
+        <div class="card-icon amber">
+          <mat-icon>star</mat-icon>
+        </div>
+        <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-btn">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="editarCalificacion(calificacion)">
+            <mat-icon>edit</mat-icon>
+            <span>Editar</span>
+          </button>
+          <button mat-menu-item *ngIf="isAdmin" (click)="confirmarEliminar(calificacion)" class="delete-menu-item">
+            <mat-icon>delete</mat-icon>
+            <span>Eliminar</span>
+          </button>
+        </mat-menu>
+      </div>
+      
+      <mat-card-content class="card-body">
+        <h3 class="card-title">{{ getRecetaNombre(calificacion.recetaId) }}</h3>
+        
+        <!-- Estrellas de puntaje -->
+        <div class="card-stars">
+          <mat-icon *ngFor="let star of getStars(calificacion.puntaje); let i = index" 
+                    [class.filled]="star === 1">
+            {{ star === 1 ? 'star' : 'star_border' }}
+          </mat-icon>
+          <span class="puntaje-text">{{ calificacion.puntaje }}/5</span>
+        </div>
+
+        <!-- <CHANGE> Mostrar lista asignada -->
+        <div class="card-meta">
+          <mat-icon>playlist_add_check</mat-icon>
+          <span>{{ getListaNombre(calificacion.listaId) }}</span>
+        </div>
+
+        <p class="card-description" *ngIf="calificacion.comentario">
+          {{ calificacion.comentario.length > 100 ? (calificacion.comentario | slice:0:100) + '...' : calificacion.comentario }}
+        </p>
+      </mat-card-content>
+      
+      <div class="card-footer">
+        <span class="card-id">#{{ calificacion.id }}</span>
+        <div class="card-actions">
+          <button mat-icon-button matTooltip="Editar" (click)="editarCalificacion(calificacion)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Eliminar" *ngIf="isAdmin" (click)="confirmarEliminar(calificacion)" class="delete-btn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+      
+    </mat-card>
+  </div>
+</div>

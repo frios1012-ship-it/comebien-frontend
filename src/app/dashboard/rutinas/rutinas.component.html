@@ -1,0 +1,265 @@
+<!-- src/app/dashboard/rutinas/rutinas.component.html -->
+
+<div class="crud-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-info">
+      <div class="title-wrapper">
+        <mat-icon class="page-icon blue">event_note</mat-icon>
+        <div>
+          <h1>Gestión de Rutinas</h1>
+          <p>Administra las rutinas de entrenamiento</p>
+        </div>
+      </div>
+      <div class="stats-chip">
+        <mat-icon>event_note</mat-icon>
+        <span>{{ rutinas.length }} rutinas</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input 
+          type="text" 
+          placeholder="Buscar rutinas..." 
+          [(ngModel)]="searchTerm"
+          (input)="filterRutinas()">
+      </div>
+
+      <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+        <mat-icon>add</mat-icon>
+        <span>Nueva Rutina</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading && !showForm">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando rutinas...</p>
+  </div>
+
+  <!-- Form Modal -->
+  <ng-container *ngIf="showForm">
+    <div class="modal-overlay" (click)="closeForm()"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">
+          <mat-icon>{{ editMode ? 'edit' : 'event_note' }}</mat-icon>
+          <div>
+            <h2>{{ editMode ? 'Editar Rutina' : 'Nueva Rutina' }}</h2>
+            <p>{{ editMode ? 'Modifica los datos de la rutina' : 'Crea una nueva rutina' }}</p>
+          </div>
+        </div>
+        <button mat-icon-button (click)="closeForm()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <form [formGroup]="rutinaForm" (ngSubmit)="guardarRutina()" class="modal-body">
+        
+        <!-- Nombre -->
+        <div class="form-group">
+          <label>Nombre de la Rutina</label>
+          <div class="input-field">
+            <mat-icon>event_note</mat-icon>
+            <input type="text" formControlName="nombre" placeholder="Ej: Rutina Full Body">
+          </div>
+          <span class="field-error" *ngIf="rutinaForm.get('nombre')?.invalid && rutinaForm.get('nombre')?.touched">
+            El nombre es requerido
+          </span>
+        </div>
+
+        <!-- Objetivo y Nivel -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Objetivo</label>
+            <div class="select-field">
+              <mat-icon>flag</mat-icon>
+              <select formControlName="objetivo">
+                <option value="" disabled>Selecciona el objetivo</option>
+                <option *ngFor="let objetivo of objetivos" [value]="objetivo">{{ objetivo }}</option>
+              </select>
+              <mat-icon class="arrow-icon">expand_more</mat-icon>
+            </div>
+            <span class="field-error" *ngIf="rutinaForm.get('objetivo')?.invalid && rutinaForm.get('objetivo')?.touched">
+              El objetivo es requerido
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Nivel</label>
+            <div class="select-field">
+              <mat-icon>signal_cellular_alt</mat-icon>
+              <select formControlName="nivel">
+                <option value="" disabled>Selecciona el nivel</option>
+                <option *ngFor="let nivel of niveles" [value]="nivel">{{ nivel }}</option>
+              </select>
+              <mat-icon class="arrow-icon">expand_more</mat-icon>
+            </div>
+            <span class="field-error" *ngIf="rutinaForm.get('nivel')?.invalid && rutinaForm.get('nivel')?.touched">
+              El nivel es requerido
+            </span>
+          </div>
+        </div>
+
+        <!-- Duración -->
+        <div class="form-group">
+          <label>Duración Total (minutos)</label>
+          <div class="input-field">
+            <mat-icon>schedule</mat-icon>
+            <input type="number" formControlName="duracionTotal" placeholder="45">
+          </div>
+          <span class="field-error" *ngIf="rutinaForm.get('duracionTotal')?.invalid && rutinaForm.get('duracionTotal')?.touched">
+            La duración es requerida
+          </span>
+        </div>
+
+        <!-- <CHANGE> Selector de Lista -->
+        <div class="form-group">
+          <label>Asignar a Lista (opcional)</label>
+          <div class="select-field">
+            <mat-icon>playlist_add_check</mat-icon>
+            <select formControlName="listaId">
+              <option [ngValue]="null">Sin lista asignada</option>
+              <option *ngFor="let lista of listas; trackBy: trackById" [ngValue]="lista.id">
+                {{ lista.nombre }}
+              </option>
+            </select>
+            <mat-icon class="arrow-icon">expand_more</mat-icon>
+          </div>
+        </div>
+
+        <!-- Imagen URL -->
+        <div class="form-group">
+          <label>Imagen URL (opcional)</label>
+          <div class="input-field">
+            <mat-icon>image</mat-icon>
+            <input type="text" formControlName="imagen" placeholder="https://...">
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" mat-stroked-button (click)="closeForm()" class="cancel-btn">
+            Cancelar
+          </button>
+
+          <!-- Loading state -->
+          <button 
+            *ngIf="loading" 
+            type="button" 
+            mat-raised-button 
+            color="primary" 
+            disabled 
+            class="submit-btn">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Guardando...</span>
+          </button>
+
+          <!-- Edit mode -->
+          <button 
+            *ngIf="!loading && editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>save</mat-icon>
+            <span>Guardar</span>
+          </button>
+
+          <!-- Create mode -->
+          <button 
+            *ngIf="!loading && !editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>add</mat-icon>
+            <span>Crear</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredRutinas.length === 0 && !showForm">
+    <div class="empty-icon">
+      <mat-icon>event_note</mat-icon>
+    </div>
+    <h3>No hay rutinas registradas</h3>
+    <p>Comienza creando la primera rutina</p>
+
+    <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+      <mat-icon>add</mat-icon>
+      <span>Crear Rutina</span>
+    </button>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="cards-grid" *ngIf="!loading && filteredRutinas.length > 0">
+    <mat-card class="crud-card" *ngFor="let rutina of filteredRutinas; trackBy: trackById">
+
+      <div class="card-header">
+        <div class="card-icon blue">
+          <mat-icon>event_note</mat-icon>
+        </div>
+
+        <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-btn">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="editarRutina(rutina)">
+            <mat-icon>edit</mat-icon>
+            <span>Editar</span>
+          </button>
+
+          <button mat-menu-item *ngIf="isAdmin" (click)="confirmarEliminar(rutina)" class="delete-menu-item">
+            <mat-icon>delete</mat-icon>
+            <span>Eliminar</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <mat-card-content class="card-body">
+        <h3 class="card-title">{{ rutina.nombre }}</h3>
+
+        <div class="card-meta">
+          <mat-icon>{{ getObjetivoIcon(rutina.objetivo) }}</mat-icon>
+          <span>{{ rutina.objetivo }}</span>
+        </div>
+
+        <div class="card-meta">
+          <mat-icon>schedule</mat-icon>
+          <span>{{ rutina.duracionTotal }} minutos</span>
+        </div>
+
+        <!-- <CHANGE> Mostrar lista asignada -->
+        <div class="card-meta">
+          <mat-icon>playlist_add_check</mat-icon>
+          <span>{{ getListaNombre(rutina.listaId) }}</span>
+        </div>
+
+        <div class="card-tags">
+          <span class="tag" [ngClass]="getNivelClass(rutina.nivel)">{{ rutina.nivel }}</span>
+        </div>
+      </mat-card-content>
+
+      <div class="card-footer">
+        <span class="card-id">#{{ rutina.id }}</span>
+        <div class="card-actions">
+          <button mat-icon-button matTooltip="Editar" (click)="editarRutina(rutina)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Eliminar" *ngIf="isAdmin" (click)="confirmarEliminar(rutina)" class="delete-btn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+
+    </mat-card>
+  </div>
+</div>

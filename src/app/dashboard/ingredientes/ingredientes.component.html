@@ -1,0 +1,221 @@
+<!-- src/app/dashboard/ingredientes/ingredientes.component.html -->
+
+<div class="crud-container">
+  <div class="page-header">
+    <div class="header-info">
+      <div class="title-wrapper">
+        <mat-icon class="page-icon yellow">egg</mat-icon>
+        <div>
+          <h1>Gestión de Ingredientes</h1>
+          <p>Administra los ingredientes disponibles</p>
+        </div>
+      </div>
+      <div class="stats-chip">
+        <mat-icon>egg</mat-icon>
+        <span>{{ ingredientes.length }} ingredientes</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input type="text" placeholder="Buscar ingredientes..." [(ngModel)]="searchTerm" (input)="filterIngredientes()">
+      </div>
+
+      <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+        <mat-icon>add</mat-icon>
+        <span>Nuevo Ingrediente</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading && !showForm">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando ingredientes...</p>
+  </div>
+
+  <!-- Form Modal -->
+  <ng-container *ngIf="showForm">
+    <div class="modal-overlay" (click)="closeForm()"></div>
+
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">
+          <mat-icon>{{ editMode ? 'edit' : 'add_circle' }}</mat-icon>
+          <div>
+            <h2>{{ editMode ? 'Editar Ingrediente' : 'Nuevo Ingrediente' }}</h2>
+            <p>{{ editMode ? 'Modifica los datos' : 'Agrega un nuevo ingrediente' }}</p>
+          </div>
+        </div>
+
+        <button mat-icon-button (click)="closeForm()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <form [formGroup]="ingredienteForm" (ngSubmit)="guardarIngrediente()" class="modal-body">
+
+        <!-- Nombre -->
+        <div class="form-group">
+          <label>Nombre</label>
+          <div class="input-field">
+            <mat-icon>egg</mat-icon>
+            <input type="text" formControlName="nombre" placeholder="Ej: Pollo">
+          </div>
+          <span class="field-error" *ngIf="ingredienteForm.get('nombre')?.invalid && ingredienteForm.get('nombre')?.touched">
+            El nombre es requerido
+          </span>
+        </div>
+
+        <!-- Calorías y Proteínas -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Calorías (por 100g)</label>
+            <div class="input-field">
+              <mat-icon>local_fire_department</mat-icon>
+              <input type="number" formControlName="caloriasPor100g" placeholder="165">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Proteínas (g)</label>
+            <div class="input-field">
+              <mat-icon>fitness_center</mat-icon>
+              <input type="number" formControlName="proteinasPor100g" placeholder="31">
+            </div>
+          </div>
+        </div>
+
+        <!-- Carbohidratos y grasas -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Carbohidratos (g)</label>
+            <div class="input-field">
+              <mat-icon>grain</mat-icon>
+              <input type="number" formControlName="carbohidratosPor100g" placeholder="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Grasas (g)</label>
+            <div class="input-field">
+              <mat-icon>water_drop</mat-icon>
+              <input type="number" formControlName="grasasPor100g" placeholder="3.6">
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" mat-stroked-button (click)="closeForm()" class="cancel-btn">
+            Cancelar
+          </button>
+
+          <!-- Loading state -->
+          <button 
+            *ngIf="loading" 
+            type="button" 
+            mat-raised-button 
+            color="primary" 
+            disabled 
+            class="submit-btn">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Guardando...</span>
+          </button>
+
+          <!-- Edit mode -->
+          <button 
+            *ngIf="!loading && editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>save</mat-icon>
+            <span>Guardar</span>
+          </button>
+
+          <!-- Create mode -->
+          <button 
+            *ngIf="!loading && !editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>add</mat-icon>
+            <span>Crear</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredIngredientes.length === 0 && !showForm">
+    <div class="empty-icon"><mat-icon>egg</mat-icon></div>
+    <h3>No hay ingredientes</h3>
+    <p>Agrega el primer ingrediente</p>
+
+    <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+      <mat-icon>add</mat-icon>
+      <span>Agregar</span>
+    </button>
+  </div>
+
+  <!-- Cards -->
+  <div class="cards-grid" *ngIf="!loading && filteredIngredientes.length > 0">
+    <mat-card class="crud-card" *ngFor="let ingrediente of filteredIngredientes; trackBy: trackById">
+
+      <div class="card-header">
+        <div class="card-icon yellow">
+          <mat-icon>egg</mat-icon>
+        </div>
+
+        <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-btn">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="editarIngrediente(ingrediente)">
+            <mat-icon>edit</mat-icon>
+            <span>Editar</span>
+          </button>
+
+          <button mat-menu-item *ngIf="isAdmin" (click)="confirmarEliminar(ingrediente)" class="delete-menu-item">
+            <mat-icon>delete</mat-icon>
+            <span>Eliminar</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <mat-card-content class="card-body">
+        <h3 class="card-title">{{ ingrediente.nombre }}</h3>
+
+        <div class="card-meta">
+          <mat-icon>local_fire_department</mat-icon>
+          <span>{{ ingrediente.caloriasPor100g }} cal</span>
+        </div>
+
+        <div class="card-tags">
+          <span class="tag" *ngIf="ingrediente.proteinasPor100g">{{ ingrediente.proteinasPor100g }}g prot</span>
+          <span class="tag blue" *ngIf="ingrediente.carbohidratosPor100g">{{ ingrediente.carbohidratosPor100g }}g carbs</span>
+          <span class="tag yellow" *ngIf="ingrediente.grasasPor100g">{{ ingrediente.grasasPor100g }}g grasas</span>
+        </div>
+      </mat-card-content>
+
+      <div class="card-footer">
+        <span class="card-id">#{{ ingrediente.id }}</span>
+        <div class="card-actions">
+          <button mat-icon-button matTooltip="Editar" (click)="editarIngrediente(ingrediente)">
+            <mat-icon>edit</mat-icon>
+          </button>
+
+          <button mat-icon-button matTooltip="Eliminar" *ngIf="isAdmin" (click)="confirmarEliminar(ingrediente)" class="delete-btn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+
+    </mat-card>
+  </div>
+</div>

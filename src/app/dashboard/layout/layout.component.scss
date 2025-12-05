@@ -1,0 +1,251 @@
+// src/app/dashboard/layout/layout.component.scss
+
+$primary: #00D9A5;
+$dark-bg: #0A0A0F;
+$dark-surface: #12121A;
+$dark-elevated: #1A1A25;
+$dark-border: #2A2A3A;
+$text-primary: #FFFFFF;
+$text-secondary: #A0A0B0;
+$text-muted: #606070;
+
+.sidenav-container {
+  height: 100vh;
+  background: $dark-bg;
+}
+
+.sidenav {
+  width: 280px;
+  background: $dark-surface;
+  border-right: 1px solid $dark-border;
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 24px 20px; // <CHANGE> Agregado padding horizontal
+    border-bottom: 1px solid $dark-border;
+    
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, $primary 0%, #00B4D8 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba($primary, 0.3);
+      flex-shrink: 0;
+      
+      mat-icon {
+        font-size: 26px;
+        width: 26px;
+        height: 26px;
+        color: $dark-bg;
+      }
+    }
+    
+    .logo-text {
+      h2 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: $text-primary;
+        margin: 0;
+        line-height: 1.2;
+      }
+      
+      span {
+        font-size: 0.7rem;
+        color: $text-muted;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+    }
+  }
+  
+  .nav-section {
+    padding: 20px 16px; // <CHANGE> Padding para toda la seccion de navegacion
+    
+    .nav-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: $text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 8px 12px; // <CHANGE> Padding interno para el label
+      margin-bottom: 8px;
+    }
+  }
+  
+  mat-nav-list {
+    padding: 0 !important; // <CHANGE> Remover padding default de mat-nav-list
+    
+    a.mat-mdc-list-item {
+      margin: 4px 0 !important; // <CHANGE> Solo margen vertical
+      border-radius: 12px !important;
+      height: 48px !important;
+      color: $text-secondary;
+      transition: all 0.2s ease;
+      padding: 0 16px !important; // <CHANGE> Padding horizontal interno
+      
+      .mdc-list-item__content {
+        padding: 0 !important;
+      }
+      
+      mat-icon {
+        color: $text-muted;
+        margin-right: 14px;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+      }
+      
+      span {
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+      
+      &:hover {
+        background: rgba($primary, 0.08) !important;
+        color: $text-primary;
+        
+        mat-icon {
+          color: $primary;
+        }
+      }
+      
+      &.active {
+        background: linear-gradient(135deg, $primary 0%, #00B4D8 100%) !important;
+        color: $dark-bg !important;
+        box-shadow: 0 4px 20px rgba($primary, 0.3);
+        
+        mat-icon {
+          color: $dark-bg !important;
+        }
+        
+        span {
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+.toolbar {
+  background: $dark-surface !important;
+  border-bottom: 1px solid $dark-border !important;
+  padding: 0 24px;
+  height: 70px;
+  
+  .page-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $text-primary;
+  }
+  
+  .spacer {
+    flex: 1;
+  }
+  
+  .toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .notification-btn {
+      position: relative;
+      
+      .notification-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 8px;
+        height: 8px;
+        background: #FF6B6B;
+        border-radius: 50%;
+        border: 2px solid $dark-surface;
+      }
+    }
+    
+    .user-menu-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 12px 6px 6px;
+      border-radius: 12px;
+      background: $dark-elevated;
+      border: 1px solid $dark-border;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        border-color: rgba($primary, 0.3);
+        background: rgba($primary, 0.05);
+      }
+      
+      .avatar {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, $primary 0%, #00B4D8 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+          color: $dark-bg;
+        }
+      }
+      
+      .user-info {
+        text-align: left;
+        
+        .user-name {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: $text-primary;
+          line-height: 1.2;
+        }
+        
+        .user-role {
+          font-size: 0.75rem;
+          color: $text-muted;
+        }
+      }
+      
+      .dropdown-icon {
+        color: $text-muted;
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+.content {
+  padding: 24px;
+  background: $dark-bg;
+  min-height: calc(100vh - 70px);
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 280px;
+    right: 0;
+    height: 300px;
+    background: 
+      radial-gradient(ellipse at 20% 0%, rgba($primary, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 0%, rgba(#7C4DFF, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}

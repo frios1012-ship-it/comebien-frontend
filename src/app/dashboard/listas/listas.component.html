@@ -1,0 +1,243 @@
+<!-- src/app/dashboard/listas/listas.component.html -->
+
+<div class="crud-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-info">
+      <div class="title-wrapper">
+        <!-- Color teal para listas -->
+        <mat-icon class="page-icon teal">playlist_add_check</mat-icon>
+        <div>
+          <h1>{{ isAdmin ? 'Gestión de Listas' : 'Mis Listas' }}</h1>
+          <p>{{ isAdmin ? 'Administra todas las listas del sistema' : 'Gestiona tus listas de recetas favoritas' }}</p>
+        </div>
+      </div>
+      <div class="stats-chip">
+        <mat-icon>format_list_bulleted</mat-icon>
+        <span>{{ listas.length }} listas</span>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input 
+          type="text" 
+          placeholder="Buscar listas..." 
+          [(ngModel)]="searchTerm"
+          (input)="filterListas()">
+      </div>
+      <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+        <mat-icon>add</mat-icon>
+        <span>Nueva Lista</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading && !showForm">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando listas...</p>
+  </div>
+
+  <!-- Form Modal -->
+  <ng-container *ngIf="showForm">
+    <div class="modal-overlay" (click)="closeForm()"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">
+          <mat-icon>{{ editMode ? 'edit' : 'add_circle' }}</mat-icon>
+          <div>
+            <h2>{{ editMode ? 'Editar Lista' : 'Nueva Lista' }}</h2>
+            <p>{{ editMode ? 'Modifica los datos de la lista' : 'Crea una nueva lista personalizada' }}</p>
+          </div>
+        </div>
+        <button mat-icon-button (click)="closeForm()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      
+      <form [formGroup]="listaForm" (ngSubmit)="guardarLista()" class="modal-body">
+        <!-- Nombre -->
+        <div class="form-group">
+          <label>Nombre de la Lista</label>
+          <div class="input-field">
+            <mat-icon>badge</mat-icon>
+            <input 
+              type="text" 
+              formControlName="nombre" 
+              placeholder="Ej: Mis recetas favoritas">
+          </div>
+          <span class="field-error" *ngIf="listaForm.get('nombre')?.hasError('required') && listaForm.get('nombre')?.touched">
+            El nombre es requerido
+          </span>
+          <span class="field-error" *ngIf="listaForm.get('nombre')?.hasError('minlength') && listaForm.get('nombre')?.touched">
+            Mínimo 2 caracteres
+          </span>
+        </div>
+
+        <!-- Cliente Selector (solo admin) -->
+        <div class="form-group" *ngIf="isAdmin">
+          <label>Asignar a Cliente</label>
+          <div class="select-field">
+            <mat-icon>person</mat-icon>
+            <select formControlName="clienteId">
+              <option [ngValue]="null" disabled>Selecciona un cliente</option>
+              <option *ngFor="let cliente of clientes; trackBy: trackById" [ngValue]="cliente.id">
+                {{ cliente.nombre }}
+              </option>
+            </select>
+            <mat-icon class="arrow-icon">expand_more</mat-icon>
+          </div>
+          <span class="field-error" *ngIf="listaForm.get('clienteId')?.hasError('required') && listaForm.get('clienteId')?.touched">
+            Debes seleccionar un cliente
+          </span>
+        </div>
+
+        <!-- <CHANGE> Selector de Receta -->
+        <div class="form-group">
+          <label>Receta (opcional)</label>
+          <div class="select-field">
+            <mat-icon>restaurant_menu</mat-icon>
+            <select formControlName="recetaId">
+              <option [ngValue]="null">Sin receta asignada</option>
+              <option *ngFor="let receta of recetas; trackBy: trackById" [ngValue]="receta.id">
+                {{ receta.nombre }}
+              </option>
+            </select>
+            <mat-icon class="arrow-icon">expand_more</mat-icon>
+          </div>
+        </div>
+
+        <!-- <CHANGE> Selector de Rutina -->
+        <div class="form-group">
+          <label>Rutina (opcional)</label>
+          <div class="select-field">
+            <mat-icon>fitness_center</mat-icon>
+            <select formControlName="rutinaId">
+              <option [ngValue]="null">Sin rutina asignada</option>
+              <option *ngFor="let rutina of rutinas; trackBy: trackById" [ngValue]="rutina.id">
+                {{ rutina.nombre }}
+              </option>
+            </select>
+            <mat-icon class="arrow-icon">expand_more</mat-icon>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" mat-stroked-button (click)="closeForm()" class="cancel-btn">
+            Cancelar
+          </button>
+
+          <!-- Loading state -->
+          <button 
+            *ngIf="loading" 
+            type="button" 
+            mat-raised-button 
+            color="primary" 
+            disabled 
+            class="submit-btn">
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Guardando...</span>
+          </button>
+
+          <!-- Edit mode -->
+          <button 
+            *ngIf="!loading && editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>save</mat-icon>
+            <span>Guardar</span>
+          </button>
+
+          <!-- Create mode -->
+          <button 
+            *ngIf="!loading && !editMode" 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            class="submit-btn">
+            <mat-icon>add</mat-icon>
+            <span>Crear</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredListas.length === 0 && !showForm">
+    <div class="empty-icon">
+      <mat-icon>playlist_add</mat-icon>
+    </div>
+    <h3>No hay listas disponibles</h3>
+    <p>Crea tu primera lista para organizar tus recetas favoritas</p>
+    <button mat-raised-button color="primary" (click)="openForm()" class="new-btn">
+      <mat-icon>add</mat-icon>
+      <span>Crear Primera Lista</span>
+    </button>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="cards-grid" *ngIf="!loading && filteredListas.length > 0">
+    <mat-card class="crud-card" *ngFor="let lista of filteredListas; trackBy: trackById">
+      
+      <div class="card-header">
+        <!-- Color teal para las cards -->
+        <div class="card-icon teal">
+          <mat-icon>format_list_bulleted</mat-icon>
+        </div>
+        <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-btn">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="editarLista(lista)">
+            <mat-icon>edit</mat-icon>
+            <span>Editar</span>
+          </button>
+          <button mat-menu-item (click)="confirmarEliminar(lista)" class="delete-menu-item">
+            <mat-icon>delete</mat-icon>
+            <span>Eliminar</span>
+          </button>
+        </mat-menu>
+      </div>
+      
+      <mat-card-content class="card-body">
+        <h3 class="card-title">{{ lista.nombre }}</h3>
+        <div class="card-meta" *ngIf="isAdmin">
+          <mat-icon>person</mat-icon>
+          <span>{{ getClienteNombre(lista) }}</span>
+        </div>
+        <!-- <CHANGE> Mostrar receta asignada -->
+        <div class="card-meta">
+          <mat-icon>restaurant_menu</mat-icon>
+          <span>{{ getRecetaNombre(lista) }}</span>
+        </div>
+        <!-- <CHANGE> Mostrar rutina asignada -->
+        <div class="card-meta">
+          <mat-icon>fitness_center</mat-icon>
+          <span>{{ getRutinaNombre(lista) }}</span>
+        </div>
+        <div class="card-meta">
+          <mat-icon>calendar_today</mat-icon>
+          <span>{{ formatDate(lista.fechaCreacion) }}</span>
+        </div>
+      </mat-card-content>
+      
+      <div class="card-footer">
+        <span class="card-id">#{{ lista.id }}</span>
+        <div class="card-actions">
+          <button mat-icon-button matTooltip="Editar" (click)="editarLista(lista)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Eliminar" (click)="confirmarEliminar(lista)" class="delete-btn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+      
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,129 @@
+<!-- src/app/dashboard/home/home.component.html -->
+<div class="home-container">
+  <div class="page-header">
+    <h1>{{ getGreeting() }}, {{ userName }}</h1>
+    <p>Aquí tienes un resumen de tu sistema ComeBien</p>
+  </div>
+
+  <!-- Loader general (opcional) -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <div class="stats-grid" *ngIf="!loading">
+    <div class="stat-card primary">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <mat-icon>people</mat-icon>
+        </div>
+        <div class="stat-trend positive">
+          <mat-icon>trending_up</mat-icon>
+          +12%
+        </div>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ totalClientes }}</div>
+        <div class="stat-label">Clientes Registrados</div>
+      </div>
+    </div>
+
+    <div class="stat-card secondary">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <mat-icon>restaurant_menu</mat-icon>
+        </div>
+        <div class="stat-trend positive">
+          <mat-icon>trending_up</mat-icon>
+          +8%
+        </div>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ totalRecetas }}</div>
+        <div class="stat-label">Recetas Disponibles</div>
+      </div>
+    </div>
+
+    <div class="stat-card accent">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <mat-icon>directions_run</mat-icon>
+        </div>
+        <div class="stat-trend positive">
+          <mat-icon>trending_up</mat-icon>
+          +15%
+        </div>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ totalRutinas }}</div>
+        <div class="stat-label">Rutinas Activas</div>
+      </div>
+    </div>
+
+    <div class="stat-card info">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <mat-icon>star</mat-icon>
+        </div>
+        <div class="stat-trend positive">
+          <mat-icon>trending_up</mat-icon>
+          +5%
+        </div>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">
+          <!-- Mostrar promedio dinámico o "--" si no hay datos -->
+          {{ promedioCalificacionGlobal !== null
+              ? (promedioCalificacionGlobal | number:'1.1-1')
+              : '--' }}
+        </div>
+        <div class="stat-label">Calificación Promedio</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <h2>Acciones Rápidas</h2>
+    <div class="actions-grid">
+      <a class="action-card" routerLink="/dashboard/clientes">
+        <div class="action-icon primary">
+          <mat-icon>person_add</mat-icon>
+        </div>
+        <div class="action-text">
+          <div class="action-title">Nuevo Cliente</div>
+          <div class="action-subtitle">Registrar cliente</div>
+        </div>
+      </a>
+      
+      <a class="action-card" routerLink="/dashboard/recetas">
+        <div class="action-icon secondary">
+          <mat-icon>add_circle</mat-icon>
+        </div>
+        <div class="action-text">
+          <div class="action-title">Nueva Receta</div>
+          <div class="action-subtitle">Crear receta</div>
+        </div>
+      </a>
+      
+      <a class="action-card" routerLink="/dashboard/rutinas">
+        <div class="action-icon accent">
+          <mat-icon>fitness_center</mat-icon>
+        </div>
+        <div class="action-text">
+          <div class="action-title">Nueva Rutina</div>
+          <div class="action-subtitle">Diseñar rutina</div>
+        </div>
+      </a>
+      
+      <a class="action-card" routerLink="/dashboard/reportes">
+        <div class="action-icon info">
+          <mat-icon>bar_chart</mat-icon>
+        </div>
+        <div class="action-text">
+          <div class="action-title">Ver Reportes</div>
+          <div class="action-subtitle">Análisis de datos</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>

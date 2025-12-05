@@ -1,0 +1,7 @@
+@use '../shared/crud-styles' as *;
+// Color teal para listas
+.page-icon.teal,
+.card-icon.teal {
+  color: #009688 !important;
+  background: rgba(0, 150, 136, 0.15) !important;
+}
